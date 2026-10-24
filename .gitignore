@@ -1,0 +1,48 @@
+# ROS2 build artifacts
+build/
+install/
+log/
+
+# Python virtual environments
+yolo_venv/
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# YOLO training and prediction results
+runs/
+dataset/videos/
+dataset/images/
+dataset/training/
+weights/
+
+# Model weights stored locally
+*.pt
+*.onnx
+*.engine
+*.hef
+
+# Explicitly allow published custom model
+!models/
+!models/green_ball_best.pt
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Local environment
+.env
+.env.*
+!src/mindspark_robot/models/green_ball_best.pt
+/models/
+/models/

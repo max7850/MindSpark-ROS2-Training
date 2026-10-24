@@ -1,0 +1,19 @@
+# MindSpark ROS2 Training Module
+# Tested on Ubuntu 24.04 with ROS2 Jazzy
+# Python 3.12
+
+# Numerical processing
+numpy==1.26.4
+
+# Computer vision
+opencv-python==4.11.0.86
+
+# YOLO object detection
+ultralytics==8.4.183
+
+# PyTorch and Torchvision:
+# Install compatible versions for your CPU/CUDA platform.
+# Refer to the installation instructions in README.md.
+
+# ROS2 dependencies are provided by ROS2 Jazzy.
+# Do not install rclpy or cv_bridge using this file.
