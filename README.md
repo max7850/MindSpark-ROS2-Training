@@ -11,31 +11,41 @@ MindSpark is an educational robotics package designed to introduce ROS 2 concept
 Participants will learn to:
 
 - Create and run ROS 2 Python nodes using `ros2 run`.
+
 - Understand publishers, subscribers, topics and ROS domain configuration.
+
 - Publish images from a USB camera and subscribe to image streams.
+
 - Process camera images using OpenCV and `cv_bridge`.
+
 - Integrate a YOLO object detector into ROS 2.
+
 - Record camera video, prepare an annotated dataset, train and evaluate a custom detector, and deploy it as a ROS 2 node.
 
 ## Practical worksheets
 
-| Worksheet | Focus | Representative components |
-| --- | --- | --- |
-| PW1 | ROS 2 foundations | `hello_node`, `simple_publisher`, `simple_subscriber` |
-| PW2 | ROS 2 communication and basic computer vision | `red_ball_node`, `green_ball_node` |
-| PW3 | Camera and vision-driven robot integration | `camera_node`, `vision_decision_node`, `esp32_control_node`, `pw3_hardware.launch.py` |
-| PW4 | Pretrained YOLO detection | `yolo_detection_node`, `yolo_sports_ball_node`, `yolo_green_ball_node`, `pw4_yolo_hardware.launch.py` |
-| PW5 | Custom green-ball YOLO workflow | `video_recorder`, `frame_extractor.py`, `dataset_splitter.py`, `custom_yolo_detection` |
+| Worksheet | Focus | Representative components | PDF worksheet |
+| --- | --- | --- | --- |
+| PW1 | ROS 2 foundations | `hello_node`, `simple_publisher`, `simple_subscriber` | [View / Download PW1](docs/worksheets/PW1_ROS2_Fundamentals.pdf) |
+| PW2 | ROS 2 communication and basic computer vision | `red_ball_node`, `green_ball_node` | [View / Download PW2](docs/worksheets/PW2_ROS2_Communication.pdf) |
+| PW3 | Camera and vision-driven robot integration | `camera_node`, `vision_decision_node`, `esp32_control_node`, `pw3_hardware.launch.py` | [View / Download PW3](docs/worksheets/PW3_ROS2_Hardware_Integration.pdf) |
+| PW4 | Pretrained YOLO detection | `yolo_detection_node`, `yolo_sports_ball_node`, `yolo_green_ball_node`, `pw4_yolo_hardware.launch.py` | [View / Download PW4](docs/worksheets/PW4_YOLO_Object_Detection.pdf) |
+| PW5 | Custom green-ball YOLO workflow | `video_recorder`, `frame_extractor.py`, `dataset_splitter.py`, `custom_yolo_detection` | [View / Download PW5](docs/worksheets/PW5_Custom_YOLO_Training.pdf) |
 
-The exact practical activities, wiring, topic connections and execution order should be followed from the accompanying PW1–PW5 worksheets. The table above is a guide to package components, not a replacement for those worksheets.
+Download the PDF worksheets using the links above. The exact practical activities, wiring, topic connections and execution order should be followed from the accompanying PW1–PW5 worksheets. The table above is a guide to package components, not a replacement for those worksheets.
 
 ## System requirements
 
 - Ubuntu 24.04 LTS (tested development platform)
+
 - ROS 2 Jazzy
+
 - Python 3.12
+
 - USB camera compatible with OpenCV/V4L2 (for vision practicals)
+
 - Optional ESP32 and motor-controller hardware for physical robot control
+
 - CPU or supported GPU for inference; GPU strongly recommended for custom model training
 
 ### ROS 2 dependencies
@@ -55,6 +65,13 @@ MindSpark-ROS2-Training/
 │       ├── package.xml
 │       ├── setup.py
 │       └── setup.cfg
+├── docs/
+│   └── worksheets/
+│       ├── PW1_ROS2_Fundamentals.pdf
+│       ├── PW2_ROS2_Communication.pdf
+│       ├── PW3_ROS2_Hardware_Integration.pdf
+│       ├── PW4_YOLO_Object_Detection.pdf
+│       └── PW5_Custom_YOLO_Training.pdf
 ├── frame_extractor.py
 ├── dataset_splitter.py
 ├── requirements.txt
@@ -69,16 +86,16 @@ Local-only build artifacts, virtual environments, videos, extracted frames, data
 
 ### 1. Install ROS 2 Jazzy
 
-Follow the official Ubuntu installation guide: <https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html>.
+Follow the official Ubuntu installation guide: \<https\://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html>.
 
 Install the build tools and required ROS packages through the system package manager; ensure `ros2`, `colcon` and `cv_bridge` work before continuing.
 
 ### 2. Clone the repository
 
 ```bash
-mkdir -p ~/mindspark_ws
-cd ~/mindspark_ws
-git clone <YOUR_GITHUB_REPOSITORY_URL> .
+mkdir -p \~/mindspark_ws
+cd \~/mindspark_ws
+git clone \<YOUR_GITHUB_REPOSITORY_URL> .
 ```
 
 Replace the placeholder with the published repository URL. Clone into an **empty** directory.
@@ -88,7 +105,7 @@ Replace the placeholder with the published repository URL. Clone into an **empty
 On the tested platform, a virtual environment with access to system ROS packages was used:
 
 ```bash
-cd ~/mindspark_ws
+cd \~/mindspark_ws
 python3 -m venv --system-site-packages yolo_venv
 source /opt/ros/jazzy/setup.bash
 source yolo_venv/bin/activate
@@ -98,7 +115,7 @@ source yolo_venv/bin/activate
 
 ### 4. Install Python dependencies
 
-Install PyTorch/Torchvision from the appropriate CPU/CUDA package source for your device, following <https://pytorch.org/get-started/locally/>. Then install the Python application dependencies:
+Install PyTorch/Torchvision from the appropriate CPU/CUDA package source for your device, following \<https\://pytorch.org/get-started/locally/>. Then install the Python application dependencies:
 
 ```bash
 python -m pip install -r requirements.txt -c yolo_constraints.txt
@@ -111,7 +128,7 @@ If installation causes conflicts with ROS packages, resolve them before proceedi
 With ROS 2 sourced, use `rosdep` where available:
 
 ```bash
-cd ~/mindspark_ws
+cd \~/mindspark_ws
 rosdep install --from-paths src --ignore-src -r -y
 python -m colcon build --packages-select mindspark_robot --symlink-install
 source install/setup.bash
@@ -168,6 +185,7 @@ ros2 topic hz /camera/image_raw
 The camera node was observed publishing `/camera/image_raw`. The custom detector subscribes to this topic and publishes:
 
 - `/custom_yolo/annotated_image` — annotated image (`sensor_msgs/msg/Image`)
+
 - `/custom_yolo/ball_position` — ball location (`geometry_msgs/msg/Point`)
 
 Check your ROS domain on all participating terminals or machines:
@@ -205,11 +223,17 @@ ros2 run mindspark_robot custom_yolo_detection --ros-args -p model_path:=/absolu
 ## Dataset workflow (PW5)
 
 1. Record green-ball videos from the ROS 2 camera stream using `video_recorder`.
+
 2. Extract frames with `frame_extractor.py`.
+
 3. Annotate one class, `green_ball`, in Roboflow or another compatible tool.
+
 4. Split by **recording/session**, rather than random frames from the same recording, to reduce data leakage.
+
 5. Export a compatible Ultralytics dataset and train on an appropriately equipped PC.
+
 6. Evaluate on held-out data and test live detection.
+
 7. Deploy the exported custom `.pt` model through `custom_yolo_detection`.
 
 Raw recordings, annotated datasets and training runs are local development assets and are not automatically included in this repository. Follow the PW5 worksheet for exact dataset naming, training commands and testing criteria.
@@ -232,7 +256,7 @@ Raw recordings, annotated datasets and training runs are local development asset
 
 MindSpark ROS2 Training Module is released under the **GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)**. See the LICENSE file for the complete license terms. Third-party libraries, pretrained models and custom-trained weights remain subject to their applicable licensing and redistribution requirements.
 
-**Important:** Ultralytics software and model weights can carry separate license and redistribution obligations. Review the applicable license for the pretrained foundation model, custom `green_ball_best.pt`, annotations, training images and videos **before publicly distributing those assets**. Do not assume that applying Apache-2.0 to your own ROS 2 code changes third-party model licenses.
+**Important:** Ultralytics software and model weights can carry separate license and redistribution obligations. Review the applicable license for the pretrained foundation model, custom `green_ball_best.pt`, annotations, training images and videos **before publicly distributing those assets**. The repository license does not override third-party model licenses.
 
 ## Credits
 
