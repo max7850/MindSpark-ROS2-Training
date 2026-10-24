@@ -230,7 +230,7 @@ Raw recordings, annotated datasets and training runs are local development asset
 
 ## Licensing and redistribution
 
-The MindSpark ROS 2 **source code** is intended to be released under **Apache-2.0**, subject to adding the actual `LICENSE` file and verifying ownership/third-party contributions. The `package.xml` and `setup.py` metadata alone are not a substitute for a license file.
+MindSpark ROS2 Training Module is released under the **GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)**. See the LICENSE file for the complete license terms. Third-party libraries, pretrained models and custom-trained weights remain subject to their applicable licensing and redistribution requirements.
 
 **Important:** Ultralytics software and model weights can carry separate license and redistribution obligations. Review the applicable license for the pretrained foundation model, custom `green_ball_best.pt`, annotations, training images and videos **before publicly distributing those assets**. Do not assume that applying Apache-2.0 to your own ROS 2 code changes third-party model licenses.
 
