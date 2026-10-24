@@ -196,6 +196,46 @@ echo "$ROS_DOMAIN_ID"
 
 For ROS 2 nodes to communicate across hosts, ensure compatible DDS/network settings and matching ROS domain IDs.
 
+## YOLO inference device: GPU first, CPU fallback
+
+All four YOLO nodes (PW4 general detection, sports-ball detection, green-ball detection, and PW5 custom detection) select **NVIDIA CUDA GPU when PyTorch reports CUDA as available**, otherwise they use **CPU**. No source-code edit is required on a CPU-only machine, provided its Python environment has compatible CPU PyTorch, Ultralytics, and ROS 2 dependencies.
+
+| ROS 2 executable | Camera input | Default inference device |
+| --- | --- | --- |
+| `yolo_detection_node` | Direct OpenCV webcam | CUDA GPU if available; otherwise CPU |
+| `yolo_sports_ball_node` | Direct OpenCV webcam | CUDA GPU if available; otherwise CPU |
+| `yolo_green_ball_node` | Subscribes to `/camera/image_raw` | CUDA GPU if available; otherwise CPU |
+| `custom_yolo_detection` | Subscribes to `/camera/image_raw` | `device:=auto` (CUDA first, CPU otherwise) |
+
+For PW5, you can explicitly choose a processing device without editing code:
+
+```bash
+# Automatic selection (default)
+ros2 run mindspark_robot custom_yolo_detection
+
+# Force CPU, even on a machine with CUDA
+ros2 run mindspark_robot custom_yolo_detection --ros-args -p device:=cpu
+
+# Request the first CUDA GPU (requires compatible CUDA environment)
+ros2 run mindspark_robot custom_yolo_detection --ros-args -p device:=cuda:0
+```
+
+**Test evidence:** On the development PC with NVIDIA RTX 2060, PW4 general detection and PW5 custom detection logged CUDA device selection. PW5 also loaded the custom model and started successfully with `device:=cpu`. CPU-only inference on a different computer and clean-clone installation still require independent verification; successful initialization alone does not establish throughput or detection accuracy.
+
+**Important limitations:** This automatic selection applies to *CUDA*, not generic AMD/Intel GPUs, Hailo, or other accelerators. It falls back when CUDA is **unavailable at startup**, but it does **not** automatically recover from a GPU error or out-of-memory failure during loading/inference. CPU execution may be slower, and performance depends on the camera pipeline and hardware.
+
+Build the package using the interpreter that has the YOLO dependencies, as tested with `yolo_venv` activated:
+
+```bash
+cd ~/mindspark_ws
+source /opt/ros/jazzy/setup.bash
+source yolo_venv/bin/activate
+python -m colcon build --symlink-install --packages-select mindspark_robot
+source install/setup.bash
+```
+
+A visible `(yolo_venv)` prompt does not guarantee that a previously generated `ros2 run` executable points to the venv interpreter. If `torch` or `ultralytics` cannot be imported, verify the executable's first line (its *shebang*), e.g. `head -n 1 install/mindspark_robot/lib/mindspark_robot/custom_yolo_detection`, and rebuild with the intended Python interpreter.
+
 ## YOLO models
 
 ### Pretrained detection (PW4)
@@ -242,7 +282,7 @@ Raw recordings, annotated datasets and training runs are local development asset
 
 **`ros2 run` executable not found:** Source `/opt/ros/jazzy/setup.bash` and `install/setup.bash`; rebuild the package and check `setup.py` console-script entries.
 
-**`ModuleNotFoundError: ultralytics`:** Ensure the terminal/build uses the intended `yolo_venv`. A new shell does not activate it automatically.
+**`ModuleNotFoundError: torch` or `ultralytics`:** Ensure the terminal/build uses the intended `yolo_venv`. A new shell does not activate it automatically.
 
 **Custom model not found:** Verify that `src/mindspark_robot/models/green_ball_best.pt` exists, `setup.py` installs `models/*.pt`, and the workspace has been rebuilt and sourced.
 
