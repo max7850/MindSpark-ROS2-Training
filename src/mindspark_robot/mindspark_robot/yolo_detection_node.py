@@ -14,10 +14,13 @@
 #   - Bounding box visualization
 #   - Class label and confidence score
 #   - FPS monitoring
+#   - Automatic GPU/CPU selection
+#   - GPU first, CPU fallback
 # ============================================================
 
 import time
 import cv2
+import torch
 
 import rclpy
 from rclpy.node import Node
@@ -51,7 +54,31 @@ class YOLODetectionNode(Node):
         self.img_size = 640
 
         # ----------------------------------------------------
-        # 3. Load Pretrained YOLO Model
+        # 3. Automatic Device Selection
+        # ----------------------------------------------------
+
+        if torch.cuda.is_available():
+
+            self.device = 'cuda:0'
+
+            self.device_name = torch.cuda.get_device_name(0)
+
+            self.get_logger().info(
+                f'CUDA GPU detected: {self.device_name}'
+            )
+
+        else:
+
+            self.device = 'cpu'
+
+            self.device_name = 'CPU'
+
+            self.get_logger().warning(
+                'CUDA GPU not available. Using CPU.'
+            )
+
+        # ----------------------------------------------------
+        # 4. Load Pretrained YOLO Model
         # ----------------------------------------------------
 
         self.get_logger().info(
@@ -60,12 +87,18 @@ class YOLODetectionNode(Node):
 
         self.model = YOLO(self.model_path)
 
+        self.model.to(self.device)
+
         self.get_logger().info(
             'YOLO11 Model Loaded Successfully'
         )
 
+        self.get_logger().info(
+            f'Inference Device: {self.device}'
+        )
+
         # ----------------------------------------------------
-        # 4. Open Webcam
+        # 5. Open Webcam
         # ----------------------------------------------------
 
         self.cap = cv2.VideoCapture(
@@ -79,13 +112,11 @@ class YOLODetectionNode(Node):
                 'Cannot open webcam'
             )
 
-        # Camera format
         self.cap.set(
             cv2.CAP_PROP_FOURCC,
             cv2.VideoWriter_fourcc(*'MJPG')
         )
 
-        # Camera resolution
         self.cap.set(
             cv2.CAP_PROP_FRAME_WIDTH,
             self.frame_width
@@ -97,7 +128,7 @@ class YOLODetectionNode(Node):
         )
 
         # ----------------------------------------------------
-        # 5. FPS Monitoring
+        # 6. FPS Monitoring
         # ----------------------------------------------------
 
         self.frame_count = 0
@@ -107,7 +138,7 @@ class YOLODetectionNode(Node):
         self.current_fps = 0.0
 
         # ----------------------------------------------------
-        # 6. ROS2 Timer
+        # 7. ROS2 Timer
         # ----------------------------------------------------
 
         self.timer = self.create_timer(
@@ -116,7 +147,7 @@ class YOLODetectionNode(Node):
         )
 
         # ----------------------------------------------------
-        # 7. Startup Information
+        # 8. Startup Information
         # ----------------------------------------------------
 
         self.get_logger().info(
@@ -141,6 +172,10 @@ class YOLODetectionNode(Node):
 
         self.get_logger().info(
             'Detection Mode: All Classes'
+        )
+
+        self.get_logger().info(
+            f'Processing Device: {self.device_name}'
         )
 
         self.get_logger().info(
@@ -175,6 +210,7 @@ class YOLODetectionNode(Node):
             source=frame,
             conf=self.conf_threshold,
             imgsz=self.img_size,
+            device=self.device,
             verbose=False
         )
 
@@ -193,7 +229,7 @@ class YOLODetectionNode(Node):
         annotated_frame = result.plot()
 
         # ----------------------------------------------------
-        # 5. Calculate Inference Loop FPS
+        # 5. Calculate Detection FPS
         # ----------------------------------------------------
 
         self.frame_count += 1
@@ -242,7 +278,29 @@ class YOLODetectionNode(Node):
         )
 
         # ----------------------------------------------------
-        # 7. Display Video
+        # 7. Display Processing Device
+        # ----------------------------------------------------
+
+        if self.device.startswith('cuda'):
+
+            device_text = 'Device: GPU'
+
+        else:
+
+            device_text = 'Device: CPU'
+
+        cv2.putText(
+            annotated_frame,
+            device_text,
+            (10, 70),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 255),
+            2
+        )
+
+        # ----------------------------------------------------
+        # 8. Display Video
         # ----------------------------------------------------
 
         cv2.imshow(
@@ -250,7 +308,6 @@ class YOLODetectionNode(Node):
             annotated_frame
         )
 
-        # Press Q to exit
         key = cv2.waitKey(1) & 0xFF
 
         if key == ord('q'):
@@ -267,7 +324,7 @@ class YOLODetectionNode(Node):
 
     def destroy_node(self):
 
-        if self.cap.isOpened():
+        if hasattr(self, 'cap') and self.cap.isOpened():
 
             self.cap.release()
 

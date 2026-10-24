@@ -29,6 +29,7 @@ import time
 
 import cv2
 import numpy as np
+import torch
 
 import rclpy
 from rclpy.node import Node
@@ -65,8 +66,15 @@ class YOLOGreenBallNode(Node):
         # COCO Sports Ball Class
         self.target_class = 32
 
-        # CUDA GPU
-        self.device = 0
+        # Automatic CUDA GPU selection with CPU fallback
+        if torch.cuda.is_available():
+            self.device = 'cuda:0'
+            self.device_name = torch.cuda.get_device_name(0)
+            self.get_logger().info(f'CUDA GPU detected: {self.device_name}')
+        else:
+            self.device = 'cpu'
+            self.device_name = 'CPU'
+            self.get_logger().warning('CUDA GPU unavailable. Using CPU.')
 
         # ====================================================
         # 3. HSV Green Colour Configuration
@@ -94,10 +102,12 @@ class YOLOGreenBallNode(Node):
         )
 
         self.model = YOLO(self.model_path)
+        self.model.to(self.device)
 
         self.get_logger().info(
             'YOLO Model Loaded Successfully'
         )
+        self.get_logger().info(f'Inference Device: {self.device} ({self.device_name})')
 
         # ====================================================
         # 5. OpenCV Bridge
@@ -551,6 +561,17 @@ class YOLOGreenBallNode(Node):
             annotated_frame,
             f'Green Balls: {green_ball_count}',
             (10, 45),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 255),
+            2
+        )
+
+        # Show selected processing device
+        cv2.putText(
+            annotated_frame,
+            f'Device: {"GPU" if self.device.startswith("cuda") else "CPU"}',
+            (10, 70),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.5,
             (0, 255, 255),
