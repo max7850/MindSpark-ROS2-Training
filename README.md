@@ -136,6 +136,75 @@ source install/setup.bash
 
 The development machine successfully built with `python -m colcon build` while `yolo_venv` was activated. If the `colcon` Python module is missing in a new virtual environment, install/configure the ROS/colcon build tools first.
 
+## ESP32 Firmware (PW3)
+
+PW3 includes an ESP32 LED controller that demonstrates hardware
+integration between ROS 2 and a microcontroller through USB serial
+communication.
+
+### Firmware Location
+
+```text
+firmware/esp32/pw3_led_controller/pw3_led_controller.ino
+```
+
+### Hardware Configuration
+
+| Component | ESP32 GPIO | Function |
+|---|---|---|
+| Red LED | GPIO 25 | LEFT |
+| Yellow LED | GPIO 26 | CENTRE |
+| Green LED | GPIO 27 | RIGHT |
+
+Use an appropriate current-limiting resistor for each LED.
+
+### Serial Communication
+
+The ESP32 communicates with the ROS 2 computer through USB serial
+at **115200 baud**.
+
+| Command | Action |
+|---|---|
+| `L` | Turn ON red LED |
+| `C` | Turn ON yellow LED |
+| `R` | Turn ON green LED |
+| `N` | Turn OFF all LEDs |
+
+Only one LED is active at a time.
+
+### Upload Instructions
+
+1. Open `pw3_led_controller.ino` using Arduino IDE.
+2. Install the ESP32 board package if required.
+3. Select the appropriate ESP32 board and serial port.
+4. Upload the firmware.
+5. Connect the ESP32 to the ROS 2 computer using USB.
+
+### ROS 2 Integration
+
+The PW3 hardware integration workflow is:
+
+```text
+Camera Node
+     |
+     v
+Vision Decision Node
+     |
+     v
+ESP32 Control Node
+     |
+     | USB Serial (115200 baud)
+     v
+ESP32 LED Controller
+     |
+     +-- LEFT   -> Red LED
+     +-- CENTRE -> Yellow LED
+     +-- RIGHT  -> Green LED
+     +-- NONE   -> All LEDs OFF
+```
+
+Refer to the PW3 worksheet for the complete execution procedure.
+
 ## Available executables
 
 The following names are defined in `src/mindspark_robot/setup.py`:
